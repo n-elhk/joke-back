@@ -1,4 +1,4 @@
-import { Controller, Get, HttpStatus, Param, Query, Res } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Query, Res } from '@nestjs/common';
 import { JokeService } from './core/services/joke/joke.service';
 import type { joke as JokeModel } from '@prisma/client';
 import { Response } from 'express';
@@ -20,13 +20,26 @@ export class AppController {
     }
   }
 
-  @Get('joke/:slug')
-  async getJokeBySlug(@Param('slug') slug: string): Promise<JokeModel> {
-    return this.jokeService.getJokeBySlug(slug);
-  }
-
-  @Get('joke/:jokeId')
-  async getJokeById(@Param('jokeId') jokeId: number): Promise<JokeModel> {
-    return this.jokeService.getJokeById(Number(jokeId));
+  @Get('joke')
+  async getJoke(
+    @Res() res: Response,
+    @Query('slug') slug?: string,
+    @Query('id') jokeId?: number,
+  ): Promise<void> {
+    try {
+      let joke: JokeModel | undefined = undefined;
+      if (slug) {
+        joke = await this.jokeService.getJokeBySlug(slug);
+      } else if (jokeId !== undefined) {
+        joke = await this.jokeService.getJokeById(Number(jokeId));
+      } else {
+        res
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ error: 'Id or slug must be send' });
+      }
+      res.status(200).json(joke);
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(undefined);
+    }
   }
 }
