@@ -42,4 +42,15 @@ export class AppController {
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(undefined);
     }
   }
+
+  @Get('joke/random')
+  async getRandom(@Res() res: Response): Promise<void> {
+    try {
+      const joke = await this.jokeService.pickRandomJoke();
+
+      res.status(200).json(joke);
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(undefined);
+    }
+  }
 }

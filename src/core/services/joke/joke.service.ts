@@ -15,6 +15,19 @@ export class JokeService {
     });
   }
 
+  public async pickRandomJoke() {
+    const itemCount = await this.prisma.joke.count();
+
+    const randomNumber = (min: number, max: number) => {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    };
+
+    return this.prisma.joke.findFirst({
+      take: 1,
+      skip: randomNumber(0, itemCount - 1),
+    });
+  }
+
   public getJokeBySlug(slug: string) {
     return this.prisma.joke.findFirst({ where: { slug } });
   }
