@@ -5,9 +5,10 @@ import { PrismaService } from '../prisma/prisma.service';
 export class JokeService {
   constructor(private readonly prisma: PrismaService) {}
 
-  public getJokes() {
+  public getJokes(skip: number) {
     return this.prisma.joke.findMany({
-      take: 10,
+      skip,
+      take: 3,
       orderBy: {
         id: 'desc',
       },
@@ -20,18 +21,5 @@ export class JokeService {
 
   public getJokeById(id: number) {
     return this.prisma.joke.findFirst({ where: { id } });
-  }
-
-  public getJokeCursorBased(id: number, numberOfJoke = 4) {
-    return this.prisma.joke.findMany({
-      take: numberOfJoke,
-      skip: 1, // Skip the cursor
-      cursor: {
-        id, // The cursor
-      },
-      orderBy: {
-        id: 'desc',
-      },
-    });
   }
 }

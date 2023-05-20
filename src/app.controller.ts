@@ -1,14 +1,23 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Param, Query, Res } from '@nestjs/common';
 import { JokeService } from './core/services/joke/joke.service';
 import type { joke as JokeModel } from '@prisma/client';
+import { Response } from 'express';
 
 @Controller()
 export class AppController {
   constructor(private readonly jokeService: JokeService) {}
 
   @Get('jokes')
-  async getJokes(): Promise<JokeModel[]> {
-    return this.jokeService.getJokes();
+  async getJokes(
+    @Res() res: Response,
+    @Query('skip') skip: number,
+  ): Promise<void> {
+    try {
+      const jokes = await this.jokeService.getJokes(Number(skip));
+      res.status(200).json(jokes);
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json([]);
+    }
   }
 
   @Get('joke/:slug')
@@ -16,11 +25,8 @@ export class AppController {
     return this.jokeService.getJokeBySlug(slug);
   }
 
-  @Get('joke/page')
-  async getJokesCursorBased(
-    @Query('jokeId') jokeId: number,
-    @Query('nbrJoke') nbrJoke: number,
-  ): Promise<JokeModel[]> {
-    return this.jokeService.getJokeCursorBased(Number(jokeId), Number(nbrJoke));
+  @Get('joke/:jokeId')
+  async getJokeById(@Param('jokeId') jokeId: number): Promise<JokeModel> {
+    return this.jokeService.getJokeById(Number(jokeId));
   }
 }
